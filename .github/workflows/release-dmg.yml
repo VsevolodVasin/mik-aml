@@ -18,21 +18,30 @@ jobs:
   dmg:
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install create-dmg
         run: brew install create-dmg
 
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build DMG
         env:
-          VERSION: ${{ github.event.inputs.version || github.ref_name }}
+          VERSION: ${{ steps.ver.outputs.version }}
         run: |
-          VER="${VERSION#v}"
-          export VERSION="$VER"
           chmod +x scripts/build_dmg.sh
           ./scripts/build_dmg.sh
 
@@ -42,16 +51,24 @@ jobs:
           name: mik-aml-dmg
           path: dist/MIK-AML-*.dmg
 
-      - name: Create GitHub Release
+      - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${GITHUB_REF_NAME}"
           DMG=$(ls dist/MIK-AML-*.dmg | head -1)
-          gh release create "$TAG" "$DMG" \
-            --title "MIK-AML ${TAG}" \
-            --notes "macOS DMG — Vsevolod Vasin
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$DMG" --clobber
+          else
+            gh release create "$TAG" "$DMG" \
+              --title "MIK-AML ${TAG}" \
+              --notes "$(cat <<EOF
+macOS DMG — Vsevolod Vasin
 
-See README and THIRD_PARTY.md for license and dependencies.
-Requires: brew install e2fsprogs; Khadas aml-burn-tool for USB flash."
+- Requires: \`brew install e2fsprogs\`
+- USB flash: [Khadas aml-flash-tool](https://github.com/khadas/utils/tree/master/aml-flash-tool)
+- License: GPL-3.0 (see LICENSE / THIRD_PARTY.md)
+EOF
+)"
+          fi
