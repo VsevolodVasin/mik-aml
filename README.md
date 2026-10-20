@@ -1,12 +1,8 @@
-# mik-aml (superseded)
+# mik-aml
 
-Этот монорепозиторий **разделён** на два проекта:
+Монорепозиторий разделён. Актуальные проекты:
 
-| Проект | Репозиторий |
-|--------|-------------|
-| Multi Image Kitchen (macOS) | https://github.com/VsevolodVasin/multi-image-kitchen-macos |
-| USB Burning Tool (macOS) | https://github.com/VsevolodVasin/usb-burning-tool-macos |
+- [multi-image-kitchen-macos](https://github.com/VsevolodVasin/multi-image-kitchen-macos)
+- [usb-burning-tool-macos](https://github.com/VsevolodVasin/usb-burning-tool-macos)
 
-Автор: **Vsevolod Vasin** · https://github.com/VsevolodVasin/
-
-Код здесь оставлен только как история. Новый код и релизы — в репозиториях выше.
+Здесь только история. Новый код и релизы — по ссылкам выше.
